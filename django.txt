@@ -1,0 +1,14 @@
+Q. What is Django: A popular web framework that allows us to acheive the tasks in lesser LOC. It is a "Batteries included" framewrorkthat means a lot of coding has already been done for us, for example: A dmin site, object relational mapper,  Authentication package,  Caching package, etc.  
+
+#Performance isn't everything. Django has a lot of features.  
+
+We already know what happens when a website is accessed by a person. The cleint side and server side of a website are the two key parts for its operations. The Client requests are made through a web browser to the server/ web server, that processes the request and sends an appropriate response. 
+This communication between the Client and server is governed by the HTTP (Hyper-Text Transfer Protocol). 
+As part of building the website's backend, one important thing is deciding how we're going to respond to clients. 
+    1. One way is to generate the requested page on the server and return an HTML document to the client. We render the HTML, CSS AND JS file.
+    2. Another way is to send the data and let the client generate the page(example letting the we browser render the files.)
+
+The second approach allows for multithreading of the server, thus making the application scalable. 
+Django is one such technology in which we handle the server-side. Another example of the  server side development languages are Express JS , Asp.net core. 
+
+Thus server becomes a gateway of data. Server pe we can provide endpoints jaha se client can talk to the server to get or save data peices.  Example: products, order places, etc. These endpoints represent the interface the clients use, aka API(Application Programming Interface)
