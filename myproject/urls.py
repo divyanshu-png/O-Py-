@@ -15,9 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 # myproject/urls.py
+
+
 from django.contrib import admin
 from django.urls import path
+from examiner.views import get_user_profile
 from examiner.views import submit_code_view
+from examiner.views import fetch_ai_question
 
 urlpatterns = [
     # FIX 1: Remove the parentheses from get_urls()
@@ -25,4 +29,9 @@ urlpatterns = [
     
     # FIX 2: Ensure your custom API doesn't have parentheses either
     path('api/submit-code/', submit_code_view), 
+
+    #3. New endpoint that 
+    path('api/get-question/', fetch_ai_question),
+
+    path('api/profile/', get_user_profile),
 ]

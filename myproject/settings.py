@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-eeha@erzl95&go5io4m9gzp)1s0)8ivw2m*j@w*-^e@5_5lfw@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']
 
 
 # Application definition
@@ -76,19 +77,30 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'mssql',
-        'NAME': 'db_OPy',
-        'HOST': r'localhost\SQLEXPRESS',
-        'PORT': '',
-        'OPTIONS': {
-            'driver': 'ODBC Driver 18 for SQL Server',
-            'extra_params': 'Encrypt=no;TrustServerCertificate=yes',
-            'connection_timeout': 5,
-        },
+if os.getenv('OPY_USE_SQLITE') == '1':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'mssql',
+            'NAME': os.getenv('OPY_DB_NAME', 'db_OPy'),
+            'HOST': os.getenv('OPY_DB_HOST', r'localhost\SQLEXPRESS'),
+            'PORT': os.getenv('OPY_DB_PORT', ''),
+            'OPTIONS': {
+                'driver': os.getenv('OPY_DB_DRIVER', 'ODBC Driver 17 for SQL Server'),
+                'extra_params': os.getenv(
+                    'OPY_DB_EXTRA_PARAMS',
+                    'Encrypt=no;TrustServerCertificate=yes'
+                ),
+                'connection_timeout': 5,
+            },
+        }
+    }
 
 
 
