@@ -72,7 +72,7 @@ def get_new_challenge():
         resp = requests.get(
             f"{API_BASE_URL}/api/get-question/",
             params={"user_id": DEFAULT_USER_ID},
-            timeout=10,
+            timeout=60,  # AI question generation can take ~20-30s on CPU
         )
         if resp.status_code == 200:
             return resp.json()
@@ -83,7 +83,8 @@ def get_new_challenge():
 
 # 2.b.  Check if a question exists in session state so it doesn't change on every click
 if 'current_question' not in st.session_state:
-    st.session_state.current_question = get_new_challenge()
+    with st.spinner("Generating your question..."):
+        st.session_state.current_question = get_new_challenge()
 
 # 2.c.  Display it in the Container (referencing line 39-41 of image_6b8fb0.png)
 with st.container():
@@ -149,7 +150,8 @@ with st.container():
 
         try:
             with st.spinner("Evaluating against hidden tests..."):
-                response = requests.post(f"{API_BASE_URL}/api/submit-code/", json=payload, timeout=10)
+                # AI feedback generation can take ~20-30s on CPU
+                response = requests.post(f"{API_BASE_URL}/api/submit-code/", json=payload, timeout=60)
 
                 if response.status_code == 200:
                     result = response.json()
