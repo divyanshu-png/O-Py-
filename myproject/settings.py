@@ -77,14 +77,7 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-if os.getenv('OPY_USE_SQLITE') == '1':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
+if os.getenv('OPY_USE_MSSQL') == '1':
     DATABASES = {
         'default': {
             'ENGINE': 'mssql',
@@ -101,9 +94,13 @@ else:
             },
         }
     }
-
-
-
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 

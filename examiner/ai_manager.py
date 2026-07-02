@@ -9,12 +9,9 @@ except ImportError:
 
 
 TORCH_AVAILABLE = find_spec("torch") is not None
-MODEL_ID = os.getenv(
-    "OPY_AI_MODEL",
-    "solidrust/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2-GGUF",
-)
+MODEL_ID = os.getenv("OPY_AI_MODEL", "Qwen/Qwen2.5-0.5B-Instruct")
 MAX_NEW_TOKENS = int(os.getenv("OPY_AI_MAX_NEW_TOKENS", "256"))
-LOCAL_FILES_ONLY = os.getenv("OPY_AI_LOCAL_FILES_ONLY", "1") == "1"
+LOCAL_FILES_ONLY = os.getenv("OPY_AI_LOCAL_FILES_ONLY", "0") == "1"
 
 _generator = None
 _generator_error = None
@@ -26,6 +23,11 @@ def _fallback_question():
 
 def _ai_is_configured():
     return pipeline is not None and TORCH_AVAILABLE
+
+
+def warm_up():
+    """Load the model now (main thread) instead of on the first request."""
+    _get_generator()
 
 
 def _get_generator():
@@ -42,16 +44,15 @@ def _get_generator():
         _generator_error = "PyTorch is not installed, so transformers cannot run text generation."
         return None
 
+    if LOCAL_FILES_ONLY:
+        os.environ["HF_HUB_OFFLINE"] = "1"
+
     try:
         _generator = pipeline(
             "text-generation",
             model=MODEL_ID,
             tokenizer=MODEL_ID,
-            model_kwargs={
-                "torch_dtype": "auto",
-                "local_files_only": LOCAL_FILES_ONLY,
-            },
-            tokenizer_kwargs={"local_files_only": LOCAL_FILES_ONLY},
+            model_kwargs={"dtype": "auto"},
             device_map="auto",
         )
     except Exception as exc:

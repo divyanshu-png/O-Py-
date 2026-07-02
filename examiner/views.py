@@ -1,18 +1,6 @@
-from functools import wraps
-
 from django.db import DatabaseError
 from django.http import JsonResponse
-
-try:
-    from rest_framework.decorators import api_view
-except ImportError:
-    def api_view(methods):
-        def decorator(func):
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                return func(*args, **kwargs)
-            return wrapper
-        return decorator
+from rest_framework.decorators import api_view
 
 from examiner.ai_manager import generate_new_question, get_ai_feedback
 from examiner.execution_manager import evaluate_submission
@@ -85,8 +73,12 @@ def submit_code_view(request):
     try:
         profile = UserProfile.objects.get(user_id=user_id)
 
-        # In a real app, fetch these from a Problem model.
-        test_cases = [{'input': 2, 'expected': 4}, {'input': 5, 'expected': 25}]
+        # In a real app, fetch these from a Problem model, keyed by problem_id.
+        # These match the demo `find_max(numbers)` problem shown by the frontend.
+        test_cases = [
+            {'input': [3, 1, 4, 1, 5, 9, 2, 6], 'expected': 9},
+            {'input': [-5, -1, -10], 'expected': -1},
+        ]
         is_correct = evaluate_submission(user_code, test_cases)
         ai_results = get_ai_feedback(user_code, problem_description=problem_id)
 
