@@ -1,0 +1,49 @@
+databases:
+  - name: opy-db
+    plan: free
+    databaseName: opy
+    user: opy
+
+services:
+  - name: opy-backend
+    type: web
+    runtime: python
+    plan: standard # needs ~2GB+ RAM to load the AI model (transformers/torch)
+    buildCommand: >-
+      pip install -r requirements.txt &&
+      python manage.py collectstatic --noinput &&
+      python manage.py migrate &&
+      python manage.py seed_demo_user
+    startCommand: gunicorn myproject.wsgi:application
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "0"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: opy-db
+          property: connectionString
+      - key: OPY_AI_MODEL
+        value: Qwen/Qwen2.5-0.5B-Instruct
+      - key: OPY_AI_LOCAL_FILES_ONLY
+        value: "0"
+      - key: PYTHON_VERSION
+        value: "3.13.9"
+
+  - name: opy-frontend
+    type: web
+    runtime: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: >-
+      streamlit run ui_2.py
+      --server.port $PORT --server.address 0.0.0.0 --server.headless true
+    envVars:
+      - key: OPY_API_BASE_URL
+        fromService:
+          name: opy-backend
+          type: web
+          property: hostport
+      - key: PYTHON_VERSION
+        value: "3.13.9"

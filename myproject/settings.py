@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 
+import dj_database_url
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,12 +23,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-eeha@erzl95&go5io4m9gzp)1s0)8ivw2m*j@w*-^e@5_5lfw@'
+# In production (Render), set SECRET_KEY as an environment variable.
+SECRET_KEY = os.getenv(
+    'SECRET_KEY',
+    'django-insecure-eeha@erzl95&go5io4m9gzp)1s0)8ivw2m*j@w*-^e@5_5lfw@',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', '1') == '1'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'testserver']
+
+RENDER_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_HOSTNAME)
+    CSRF_TRUSTED_ORIGINS = [f'https://{RENDER_HOSTNAME}']
+
+# The backend's own Render service name, so it accepts requests coming from
+# the frontend service over Render's private network (see render.yaml).
+ALLOWED_HOSTS.append('opy-backend')
 
 
 # Application definition
@@ -46,6 +61,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,7 +93,12 @@ WSGI_APPLICATION = 'myproject.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-if os.getenv('OPY_USE_MSSQL') == '1':
+if os.getenv('DATABASE_URL'):
+    # Render (or any host) provides this for a managed Postgres instance.
+    DATABASES = {
+        'default': dj_database_url.parse(os.environ['DATABASE_URL'], conn_max_age=600)
+    }
+elif os.getenv('OPY_USE_MSSQL') == '1':
     DATABASES = {
         'default': {
             'ENGINE': 'mssql',
@@ -140,6 +161,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    'staticfiles': {
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+    },
+}
 
 CORS_ALLOW_ALL_ORIGINS = True
 

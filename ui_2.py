@@ -1,4 +1,6 @@
 #using the Monaco code editor in #3. coding area to enhance the UI
+import os
+
 import requests
 
 try:
@@ -7,7 +9,10 @@ except ImportError:
     raise SystemExit("Streamlit is not installed. Run: pip install streamlit")
 
 
-API_BASE_URL = "http://127.0.0.1:8000"
+API_BASE_URL = os.getenv("OPY_API_BASE_URL", "http://127.0.0.1:8000")
+if not API_BASE_URL.startswith(("http://", "https://")):
+    # Render's private-network fromService value is a bare "host:port"
+    API_BASE_URL = f"http://{API_BASE_URL}"
 DEFAULT_USER_ID = 1
 
 # Set page to wide to utilize the full horizontal space
