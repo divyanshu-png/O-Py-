@@ -1,37 +1,31 @@
 """
 URL configuration for myproject project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-# myproject/urls.py
-
-
 from django.contrib import admin
 from django.urls import path
-from examiner.views import get_user_profile
-from examiner.views import submit_code_view
-from examiner.views import fetch_ai_question
+from examiner.views import (
+    admin_assign_assessment_view,
+    admin_get_users_view,
+    admin_login_view,
+    fetch_ai_question,
+    get_user_listing_view,
+    get_user_profile,
+    login_user_view,
+    register_user_view,
+    student_get_assessments_view,
+    submit_code_view,
+)
 
 urlpatterns = [
-    # FIX 1: Remove the parentheses from get_urls()
-    path('admin/', admin.site.urls), 
-    
-    # FIX 2: Ensure your custom API doesn't have parentheses either
-    path('api/submit-code/', submit_code_view), 
-
-    #3. New endpoint that 
+    path('admin/', admin.site.urls),
+    path('api/register/', register_user_view),
+    path('api/login/', login_user_view),
+    path('api/admin/login/', admin_login_view),
+    path('api/admin/users/', admin_get_users_view),
+    path('api/admin/assign-assessment/', admin_assign_assessment_view),
+    path('api/student/assessments/', student_get_assessments_view),
+    path('api/users/', get_user_listing_view),
+    path('api/submit-code/', submit_code_view),
     path('api/get-question/', fetch_ai_question),
-
     path('api/profile/', get_user_profile),
 ]
