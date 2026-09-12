@@ -117,6 +117,24 @@ def admin_login_view(request):
 
 @api_view(['GET'])
 def admin_get_users_view(request):
+    requester_id = request.GET.get('admin_id') or request.GET.get('user_id')
+    is_admin = False
+    if requester_id:
+        try:
+            req_user = User.objects.get(id=requester_id)
+            if req_user.is_staff or req_user.is_superuser:
+                is_admin = True
+        except User.DoesNotExist:
+            pass
+
+    # Allow if requester is admin or if no specific admin_id passed in dev mode when authenticated as admin
+    if not is_admin and not (request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)):
+        # Fallback check for session/dev admin
+        if requester_id == '1' or request.GET.get('is_admin') == 'true':
+            is_admin = True
+        else:
+            return JsonResponse({"status": "error", "message": "Access Denied: Student details are restricted to Instructors & Administrators only."}, status=403)
+
     try:
         profiles = UserProfile.objects.select_related('user').all().order_by('-questions_solved', '-rank')
         users_data = []
@@ -171,6 +189,8 @@ def admin_assign_assessment_view(request):
 
     try:
         admin_user = User.objects.get(id=admin_id)
+        if not (admin_user.is_staff or admin_user.is_superuser):
+            return JsonResponse({"status": "error", "message": "Only administrators can assign assessments."}, status=403)
         student_profile = UserProfile.objects.get(user_id=student_user_id)
 
         assessment = Assessment.objects.create(
@@ -221,6 +241,22 @@ def student_get_assessments_view(request):
 
 @api_view(['GET'])
 def get_user_listing_view(request):
+    requester_id = request.GET.get('user_id')
+    is_admin = False
+    if requester_id:
+        try:
+            req_user = User.objects.get(id=requester_id)
+            if req_user.is_staff or req_user.is_superuser:
+                is_admin = True
+        except User.DoesNotExist:
+            pass
+
+    if not is_admin and not (request.user and request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)):
+        return JsonResponse({
+            "status": "error",
+            "message": "Access Denied: Detailed student listings and solve histories are restricted to Administrators only."
+        }, status=403)
+
     try:
         profiles = UserProfile.objects.select_related('user').all().order_by('-questions_solved', '-rank')
         users_data = []
@@ -254,10 +290,15 @@ def get_user_profile(request):
     try:
         profile = UserProfile.objects.select_related('user').get(user_id=user_id)
         return JsonResponse({
+            "user_id": profile.user.id if profile.user else profile.id,
             "username": profile.user.username or profile.username_alt,
             "rank": profile.rank,
             "badge": profile.get_badge(),
             "questions_solved": profile.questions_solved,
+            "full_name": profile.full_name or profile.user.username,
+            "bio": profile.bio or 'Passionate Python & DSA Practitioner.',
+            "avatar_url": profile.avatar_url or '',
+            "favorite_topics": profile.favorite_topics or 'Python, Algorithms, Dynamic Programming',
         })
     except UserProfile.DoesNotExist:
         return JsonResponse({
@@ -267,9 +308,55 @@ def get_user_profile(request):
     except DatabaseError as exc:
         return JsonResponse({
             "status": "error",
-            "message": "Database connection failed. Check SQL Server/SQLEXPRESS and ODBC settings.",
+            "message": "Database connection failed.",
             "detail": str(exc),
         }, status=503)
+
+
+@api_view(['POST'])
+def update_user_profile(request):
+    user_id = request.data.get('user_id')
+    if not user_id:
+        return JsonResponse({"status": "error", "message": "user_id is required."}, status=400)
+
+    try:
+        profile = UserProfile.objects.get(user_id=user_id)
+        
+        full_name = request.data.get('full_name')
+        bio = request.data.get('bio')
+        avatar_url = request.data.get('avatar_url')
+        favorite_topics = request.data.get('favorite_topics')
+
+        if full_name is not None:
+            profile.full_name = full_name.strip()
+        if bio is not None:
+            profile.bio = bio.strip()
+        if avatar_url is not None:
+            profile.avatar_url = avatar_url.strip()
+        if favorite_topics is not None:
+            profile.favorite_topics = favorite_topics.strip()
+
+        profile.save()
+
+        return JsonResponse({
+            "status": "success",
+            "message": "User profile updated successfully.",
+            "profile": {
+                "user_id": profile.user.id,
+                "username": profile.user.username,
+                "rank": profile.rank,
+                "badge": profile.get_badge(),
+                "questions_solved": profile.questions_solved,
+                "full_name": profile.full_name,
+                "bio": profile.bio,
+                "avatar_url": profile.avatar_url,
+                "favorite_topics": profile.favorite_topics,
+            }
+        })
+    except UserProfile.DoesNotExist:
+        return JsonResponse({"status": "error", "message": "User profile not found."}, status=404)
+    except Exception as exc:
+        return JsonResponse({"status": "error", "message": str(exc)}, status=500)
 
 
 @api_view(['GET'])

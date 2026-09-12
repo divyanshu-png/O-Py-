@@ -5,6 +5,7 @@ import LoginLanding from './components/LoginLanding';
 import StartTestLanding from './components/StartTestLanding';
 import Workspace from './components/Workspace';
 import AdminDashboard from './components/AdminDashboard';
+import UserProfilePage from './components/UserProfilePage';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 const MainContent = () => {
@@ -28,6 +29,7 @@ const MainContent = () => {
         </div>
         <div className="col-lg-9 col-xl-9.5 p-3 p-md-4">
           {screen === 'admin' && <AdminDashboard />}
+          {screen === 'profile' && <UserProfilePage />}
           {screen === 'start_test' && <StartTestLanding onStartAssessment={handleStartAssessment} />}
           {screen === 'workspace' && <Workspace activeAssessment={activeAssessment} />}
         </div>

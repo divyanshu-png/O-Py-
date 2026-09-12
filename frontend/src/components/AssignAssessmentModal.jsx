@@ -50,7 +50,7 @@ const AssignAssessmentModal = ({ students, adminId, show, onClose, onAssigned })
     setMsg({ type: '', text: '' });
 
     if (!selectedStudentId) {
-      setMsg({ type: 'danger', text: 'Please select a student.' });
+      setMsg({ type: 'danger', text: 'Please select a student target.' });
       return;
     }
 
@@ -75,7 +75,7 @@ const AssignAssessmentModal = ({ students, adminId, show, onClose, onAssigned })
     setLoading(true);
     try {
       const res = await axios.post('/api/admin/assign-assessment/', {
-        admin_id: adminId,
+        admin_id: adminId || 1,
         student_user_id: parseInt(selectedStudentId, 10),
         title,
         problem_description,
@@ -92,20 +92,20 @@ const AssignAssessmentModal = ({ students, adminId, show, onClose, onAssigned })
         setMsg({ type: 'danger', text: res.data.message || 'Failed to assign assessment.' });
       }
     } catch (err) {
-      setMsg({ type: 'danger', text: err.response?.data?.message || 'Server error.' });
+      setMsg({ type: 'danger', text: err.response?.data?.message || 'Server authorization error.' });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1050 }}>
+    <div className="modal show d-block font-mono" style={{ backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 1050 }}>
       <div className="modal-dialog modal-dialog-centered modal-lg">
         <div className="modal-content bg-dark text-white border border-secondary rounded-4 shadow-lg">
           <div className="modal-header border-secondary">
-            <h5 className="modal-title fw-bold text-purple-light">
+            <h5 className="modal-title fw-bold text-orange">
               <i className="bi bi-journal-plus me-2"></i>
-              Assign Assessment to Student
+              Assign Custom Assessment to Student
             </h5>
             <button type="button" className="btn-close btn-close-white" onClick={onClose}></button>
           </div>
@@ -113,19 +113,19 @@ const AssignAssessmentModal = ({ students, adminId, show, onClose, onAssigned })
           <form onSubmit={handleSubmit}>
             <div className="modal-body p-4">
               {msg.text && (
-                <div className={`alert alert-${msg.type} py-2 mb-3 border-0`}>
+                <div className={`alert alert-${msg.type} py-2 mb-3 border-0 bg-dark text-${msg.type}`}>
                   {msg.text}
                 </div>
               )}
 
               <div className="mb-3">
-                <label className="form-label text-secondary fw-semibold">Select Student Target</label>
+                <label className="form-label text-muted fw-semibold">Select Student Target</label>
                 <select
-                  className="form-select bg-body-tertiary text-white border-secondary"
+                  className="form-select bg-dark text-white border-secondary"
                   value={selectedStudentId}
                   onChange={(e) => setSelectedStudentId(e.target.value)}
                 >
-                  <option value="">-- Choose a Student --</option>
+                  <option value="">-- Choose Target Student --</option>
                   {students.map((s) => (
                     <option key={s.user_id} value={s.user_id}>
                       {s.username} (Rating: {s.rank} - {s.badge})
@@ -142,16 +142,16 @@ const AssignAssessmentModal = ({ students, adminId, show, onClose, onAssigned })
                   checked={useCustom}
                   onChange={(e) => setUseCustom(e.target.checked)}
                 />
-                <label className="form-check-label text-secondary" htmlFor="customSwitch">
+                <label className="form-check-label text-muted" htmlFor="customSwitch">
                   Create Custom Assessment (instead of Problem Bank)
                 </label>
               </div>
 
               {!useCustom ? (
                 <div className="mb-3">
-                  <label className="form-label text-secondary fw-semibold">Pick from Problem Bank</label>
+                  <label className="form-label text-muted fw-semibold">Pick from Problem Bank</label>
                   <select
-                    className="form-select bg-body-tertiary text-white border-secondary mb-3"
+                    className="form-select bg-dark text-white border-secondary mb-3"
                     value={selectedProblemIndex}
                     onChange={(e) => setSelectedProblemIndex(e.target.value)}
                   >
@@ -162,18 +162,18 @@ const AssignAssessmentModal = ({ students, adminId, show, onClose, onAssigned })
                     ))}
                   </select>
 
-                  <div className="p-3 bg-body-tertiary rounded-3 border border-secondary">
-                    <small className="text-secondary d-block mb-1">Problem Description Preview:</small>
+                  <div className="p-3 bg-dark rounded-3 border border-secondary">
+                    <small className="text-muted d-block mb-1">Problem Description Preview:</small>
                     <p className="text-white mb-0 small">{PROBLEM_BANK[parseInt(selectedProblemIndex, 10)].description}</p>
                   </div>
                 </div>
               ) : (
                 <>
                   <div className="mb-3">
-                    <label className="form-label text-secondary fw-semibold">Assessment Title</label>
+                    <label className="form-label text-muted fw-semibold">Assessment Title</label>
                     <input
                       type="text"
-                      className="form-control bg-body-tertiary text-white border-secondary"
+                      className="form-control bg-dark text-white border-secondary"
                       placeholder="e.g., LeetCode 1. Two Sum Challenge"
                       value={customTitle}
                       onChange={(e) => setCustomTitle(e.target.value)}
@@ -181,9 +181,9 @@ const AssignAssessmentModal = ({ students, adminId, show, onClose, onAssigned })
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label text-secondary fw-semibold">Problem Description</label>
+                    <label className="form-label text-muted fw-semibold">Problem Description</label>
                     <textarea
-                      className="form-control bg-body-tertiary text-white border-secondary"
+                      className="form-control bg-dark text-white border-secondary"
                       rows="4"
                       placeholder="Write problem constraints and requirements..."
                       value={customDescription}

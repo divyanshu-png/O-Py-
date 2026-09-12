@@ -10,6 +10,7 @@ from examiner.views import (
     fetch_ai_question,
     get_user_listing_view,
     get_user_profile,
+    update_user_profile,
     login_user_view,
     register_user_view,
     student_get_assessments_view,
@@ -28,4 +29,5 @@ urlpatterns = [
     path('api/submit-code/', submit_code_view),
     path('api/get-question/', fetch_ai_question),
     path('api/profile/', get_user_profile),
+    path('api/profile/update/', update_user_profile),
 ]

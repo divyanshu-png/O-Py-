@@ -7,6 +7,10 @@ class UserProfile(models.Model):
     username_alt = models.CharField(max_length=150, unique=True)
     rank = models.IntegerField(default=1500)  # LeetCode default rating: 1500
     questions_solved = models.IntegerField(default=0)
+    full_name = models.CharField(max_length=150, blank=True, default='')
+    bio = models.TextField(blank=True, default='Passionate Python & DSA Practitioner.')
+    avatar_url = models.CharField(max_length=500, blank=True, default='')
+    favorite_topics = models.CharField(max_length=255, blank=True, default='Python, Algorithms, Dynamic Programming')
 
     def __str__(self):
         return self.username_alt

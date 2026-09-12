@@ -100,16 +100,16 @@ const Workspace = ({ activeAssessment }) => {
 
   return (
     <div ref={containerRef} className="container-fluid py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
-          <h2 className="fw-bold text-white mb-0">💻 Python Exercise Workspace</h2>
-          <small className="text-secondary">
+          <h2 className="fw-bold text-white mb-0 font-mono">💻 Python Coding Workspace</h2>
+          <small className="text-offwhite font-mono fw-semibold">
             {activeAssessment ? `Solving Assigned Assessment: ${activeAssessment.title}` : 'Solve Python challenges and receive AI-driven complexity feedback'}
           </small>
         </div>
         <button
           onClick={() => setScreen('start_test')}
-          className="btn btn-outline-secondary text-light d-flex align-items-center gap-2 rounded-3"
+          className="btn btn-outline-secondary text-offwhite d-flex align-items-center gap-2 rounded-3 font-mono"
         >
           <i className="bi bi-arrow-left"></i>
           Back to Dashboard
@@ -124,36 +124,42 @@ const Workspace = ({ activeAssessment }) => {
 
       <div className="rounded-box mb-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
-          <h4 className="fw-bold text-white mb-0">
-            <i className="bi bi-code-square me-2 text-purple-light"></i>
-            Coding Area (Monaco Editor)
+          <h4 className="fw-bold text-white mb-0 font-mono">
+            <i className="bi bi-code-square me-2 text-orange-bright"></i>
+            Interactive Code Editor
           </h4>
-          <span className="badge bg-dark border border-secondary text-secondary px-3 py-1.5">
-            Python 3.x
+          <span className="badge bg-dark border border-secondary text-orange px-3 py-1.5 font-mono">
+            Python 3.11 Execution Engine
           </span>
         </div>
 
-        <div className="border border-secondary rounded-3 overflow-hidden mb-3" style={{ height: '300px' }}>
+        <div className="border border-secondary rounded-3 overflow-hidden mb-3" style={{ height: '320px', backgroundColor: '#09090b' }}>
           <Editor
-            height="300px"
+            height="320px"
             defaultLanguage="python"
             theme="vs-dark"
             value={code}
             onChange={(val) => setCode(val || '')}
             options={{
               fontSize: 14,
+              fontFamily: "'JetBrains Mono', monospace",
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
               automaticLayout: true,
+              cursorBlinking: 'smooth',
+              smoothScrolling: true,
             }}
           />
         </div>
 
-        <div className="d-flex justify-content-end">
+        <div className="d-flex justify-content-between align-items-center">
+          <span className="text-offwhite font-mono small fw-semibold">
+            <i className="bi bi-shield-check text-success me-1"></i> Sandbox Isolated Runtime
+          </span>
           <button
             onClick={handleSubmitCode}
             disabled={submitting}
-            className="btn btn-gradient-primary py-2.5 px-4 fs-6 fw-bold d-flex align-items-center gap-2"
+            className="btn btn-gradient-primary py-2.5 px-4 fs-6 fw-bold d-flex align-items-center gap-2 font-mono"
           >
             {submitting ? (
               <>

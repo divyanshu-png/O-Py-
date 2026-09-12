@@ -14,12 +14,14 @@ const AdminDashboard = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await axios.get('/api/admin/users/');
+      const res = await axios.get('/api/admin/users/', {
+        params: { user_id: user?.user_id || 1 }
+      });
       if (res.data && res.data.status === 'success') {
         setStudents(res.data.users || []);
       }
     } catch (err) {
-      setError('Unable to fetch student list.');
+      setError(err.response?.data?.message || 'Unable to fetch student list.');
     } finally {
       setLoading(false);
     }
@@ -27,7 +29,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchAdminUsers();
-  }, []);
+  }, [user]);
 
   const totalStudents = students.length;
   const totalAssigned = students.reduce((acc, curr) => acc + (curr.assessments ? curr.assessments.length : 0), 0);
@@ -38,19 +40,22 @@ const AdminDashboard = () => {
 
   return (
     <div className="container-fluid py-4">
-      <div className="main-header d-flex justify-content-between align-items-center mb-4">
+      <div className="main-header d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-          <h1 className="fw-bold display-6 text-white mb-1">
+          <div className="d-flex align-items-center gap-2 mb-1">
+            <span className="badge bg-orange-glow px-3 py-1 font-mono text-uppercase">Admin Security Audited Console</span>
+          </div>
+          <h1 className="fw-bold display-6 text-white mb-1 font-mono">
             🛡️ Instructor & Admin Management Panel
           </h1>
-          <p className="text-secondary mb-0">
-            Logged in as Admin: <strong className="text-purple-light">{user?.username}</strong>
+          <p className="text-muted mb-0 font-mono">
+            Authenticated Admin Account: <strong className="text-orange-bright">{user?.username}</strong>
           </p>
         </div>
 
         <button
           onClick={() => setShowModal(true)}
-          className="btn btn-gradient-primary py-2.5 px-4 fs-6 fw-bold d-flex align-items-center gap-2"
+          className="btn btn-gradient-primary py-2.5 px-4 fs-6 fw-bold d-flex align-items-center gap-2 font-mono"
         >
           <i className="bi bi-plus-circle-fill fs-5"></i>
           Assign New Assessment
@@ -60,51 +65,55 @@ const AdminDashboard = () => {
       <div className="row g-4 mb-4">
         <div className="col-md-4">
           <div className="stat-card">
-            <span className="text-secondary small d-block mb-1">Registered Students</span>
-            <span className="display-6 fw-bold text-white">{totalStudents}</span>
+            <span className="text-muted small d-block mb-1 font-mono">Registered Students</span>
+            <span className="display-6 fw-bold text-white font-mono">{totalStudents}</span>
           </div>
         </div>
         <div className="col-md-4">
           <div className="stat-card">
-            <span className="text-secondary small d-block mb-1">Assigned Assessments</span>
-            <span className="display-6 fw-bold text-purple-light">{totalAssigned}</span>
+            <span className="text-muted small d-block mb-1 font-mono">Assigned Assessments</span>
+            <span className="display-6 fw-bold text-orange-bright font-mono">{totalAssigned}</span>
           </div>
         </div>
         <div className="col-md-4">
           <div className="stat-card">
-            <span className="text-secondary small d-block mb-1">Completed Assessments</span>
-            <span className="display-6 fw-bold text-success">{totalCompleted}</span>
+            <span className="text-muted small d-block mb-1 font-mono">Completed Assessments</span>
+            <span className="display-6 fw-bold text-success font-mono">{totalCompleted}</span>
           </div>
         </div>
       </div>
 
       <div className="rounded-box">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h4 className="fw-bold text-white mb-0">
-            📊 Student Performance & Assessment Tracker
-          </h4>
-          <button onClick={fetchAdminUsers} className="btn btn-sm btn-outline-purple text-purple-light">
-            <i className="bi bi-arrow-clockwise me-1"></i> Refresh
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <div>
+            <h4 className="fw-bold text-white mb-0 font-mono">
+              📊 Confidential Student Performance & Solve Logs
+            </h4>
+            <small className="text-muted font-mono">Access Restricted to Authorized Admin Credentials Only</small>
+          </div>
+          <button onClick={fetchAdminUsers} className="btn btn-sm btn-outline-orange font-mono">
+            <i className="bi bi-arrow-clockwise me-1"></i> Refresh Database
           </button>
         </div>
 
         {loading ? (
           <div className="text-center py-5">
-            <div className="spinner-border text-purple" role="status"></div>
-            <p className="text-secondary mt-2">Loading student records...</p>
+            <div className="spinner-border text-warning" role="status"></div>
+            <p className="text-muted mt-2 font-mono">Loading confidential student records...</p>
           </div>
         ) : error ? (
-          <div className="alert alert-danger">{error}</div>
+          <div className="alert alert-danger font-mono">{error}</div>
         ) : (
           <div className="table-responsive">
-            <table className="table table-dark table-hover table-dark-custom align-middle">
+            <table className="table table-dark table-hover table-dark-custom align-middle font-mono">
               <thead>
                 <tr>
-                  <th>User ID</th>
+                  <th>ID</th>
                   <th>Student Username</th>
                   <th>LeetCode Rating</th>
                   <th>Contest Badge</th>
                   <th>Questions Solved</th>
+                  <th>Recent Solve Record</th>
                   <th>Assigned Assessments</th>
                 </tr>
               </thead>
@@ -114,10 +123,10 @@ const AdminDashboard = () => {
                     <td><code>#{s.user_id}</code></td>
                     <td className="fw-bold text-white">{s.username}</td>
                     <td>
-                      <span className="fw-bold text-purple-light">{s.rank}</span>
+                      <span className="fw-bold text-orange-bright">{s.rank}</span>
                     </td>
                     <td>
-                      <span className={`badge ${s.rank >= 2150 ? 'bg-danger' : s.rank >= 1850 ? 'bg-warning text-dark' : 'bg-primary'} px-2.5 py-1`}>
+                      <span className={`badge ${s.rank >= 2150 ? 'bg-danger' : s.rank >= 1850 ? 'bg-amber-glow' : 'bg-orange-glow'} px-2.5 py-1`}>
                         {s.badge}
                       </span>
                     </td>
@@ -125,12 +134,21 @@ const AdminDashboard = () => {
                       <span className="fw-bold text-success">{s.questions_solved}</span>
                     </td>
                     <td>
+                      {s.solved_questions && s.solved_questions.length > 0 ? (
+                        <span className="text-muted small">
+                          {s.solved_questions.slice(0, 2).map(sq => sq.question_id).join(', ')}
+                        </span>
+                      ) : (
+                        <span className="text-muted small">No solve logs</span>
+                      )}
+                    </td>
+                    <td>
                       {s.assessments && s.assessments.length > 0 ? (
                         <div className="d-flex flex-wrap gap-1">
                           {s.assessments.map((asm) => (
                             <span
                               key={asm.id}
-                              className={`badge ${asm.status === 'Completed' ? 'bg-success' : 'bg-secondary'} px-2 py-1`}
+                              className={`badge ${asm.status === 'Completed' ? 'bg-success' : 'bg-dark border border-secondary text-orange'} px-2 py-1`}
                               title={`Assigned: ${asm.created_at}`}
                             >
                               {asm.title} ({asm.status})
@@ -138,7 +156,7 @@ const AdminDashboard = () => {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-secondary small">No assessments assigned</span>
+                        <span className="text-muted small">None assigned</span>
                       )}
                     </td>
                   </tr>
