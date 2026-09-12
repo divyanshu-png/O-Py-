@@ -21,6 +21,9 @@ const MainContent = () => {
     return <LoginLanding />;
   }
 
+  // Restrict Admin users from student coding workspace / test screens
+  const effectiveScreen = (user.is_admin && (screen === 'workspace' || screen === 'start_test')) ? 'admin' : screen;
+
   return (
     <div className="container-fluid p-0 main-container">
       <div className="row g-0 min-vh-100">
@@ -28,10 +31,10 @@ const MainContent = () => {
           <Sidebar />
         </div>
         <div className="col-lg-9 col-xl-9.5 p-3 p-md-4">
-          {screen === 'admin' && <AdminDashboard />}
-          {screen === 'profile' && <UserProfilePage />}
-          {screen === 'start_test' && <StartTestLanding onStartAssessment={handleStartAssessment} />}
-          {screen === 'workspace' && <Workspace activeAssessment={activeAssessment} />}
+          {effectiveScreen === 'admin' && <AdminDashboard />}
+          {effectiveScreen === 'profile' && <UserProfilePage />}
+          {effectiveScreen === 'start_test' && <StartTestLanding onStartAssessment={handleStartAssessment} />}
+          {effectiveScreen === 'workspace' && <Workspace activeAssessment={activeAssessment} />}
         </div>
       </div>
     </div>
