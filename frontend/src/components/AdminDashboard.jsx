@@ -29,7 +29,21 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchAdminUsers();
+
+    const handleOpenAssignModal = () => {
+      setShowModal(true);
+    };
+
+    window.addEventListener('open-assign-modal', handleOpenAssignModal);
+    return () => {
+      window.removeEventListener('open-assign-modal', handleOpenAssignModal);
+    };
   }, [user]);
+
+  const handleAssignedCallback = () => {
+    fetchAdminUsers();
+    window.dispatchEvent(new CustomEvent('refresh-admin-stats'));
+  };
 
   const totalStudents = students.length;
   const totalAssigned = students.reduce((acc, curr) => acc + (curr.assessments ? curr.assessments.length : 0), 0);
@@ -172,7 +186,7 @@ const AdminDashboard = () => {
         students={students}
         adminId={user?.user_id}
         onClose={() => setShowModal(false)}
-        onAssigned={fetchAdminUsers}
+        onAssigned={handleAssignedCallback}
       />
     </div>
   );

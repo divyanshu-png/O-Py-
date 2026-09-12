@@ -1,10 +1,33 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { animate } from 'animejs';
+import axios from 'axios';
 
 const Sidebar = () => {
   const { user, screen, setScreen, logoutUser } = useAuth();
   const sidebarRef = useRef(null);
+  const [adminStats, setAdminStats] = useState({ students: 0, assigned: 0, completed: 0 });
+
+  const fetchAdminStats = async () => {
+    if (!user?.is_admin) return;
+    try {
+      const res = await axios.get('/api/admin/users/', {
+        params: { user_id: user?.user_id || 1 }
+      });
+      if (res.data && res.data.status === 'success') {
+        const studentsList = res.data.users || [];
+        const totalStudents = studentsList.length;
+        const totalAssigned = studentsList.reduce((acc, curr) => acc + (curr.assessments ? curr.assessments.length : 0), 0);
+        const totalCompleted = studentsList.reduce(
+          (acc, curr) => acc + (curr.assessments ? curr.assessments.filter(a => a.status === 'Completed').length : 0),
+          0
+        );
+        setAdminStats({ students: totalStudents, assigned: totalAssigned, completed: totalCompleted });
+      }
+    } catch (err) {
+      console.error('Failed to fetch admin stats for sidebar', err);
+    }
+  };
 
   useEffect(() => {
     if (sidebarRef.current) {
@@ -16,6 +39,18 @@ const Sidebar = () => {
       });
     }
   }, []);
+
+  useEffect(() => {
+    if (user?.is_admin) {
+      fetchAdminStats();
+    }
+  }, [user, screen]);
+
+  useEffect(() => {
+    const handleRefresh = () => fetchAdminStats();
+    window.addEventListener('refresh-admin-stats', handleRefresh);
+    return () => window.removeEventListener('refresh-admin-stats', handleRefresh);
+  }, [user]);
 
   const rankPercentile = user ? Math.min(Math.max(((user.rank || 1500) - 800) / 1600 * 100, 0), 100) : 0;
 
@@ -62,7 +97,6 @@ const Sidebar = () => {
                 </div>
                 <div>
                   <small className="text-offwhite d-block font-mono fw-bold mb-0.5" style={{ fontSize: '0.78rem', letterSpacing: '0.06em' }}>
-                    {/* Requirement 1: Change highlighted text "STUDENT PROFILE" to "Admin Profile" */}
                     {user.is_admin ? 'Admin Profile' : 'Student Profile'}
                   </small>
                   <span className="fw-bold text-white fs-5 font-mono">{user.username}</span>
@@ -108,23 +142,70 @@ const Sidebar = () => {
               )}
             </div>
 
-            {/* Requirement 3: Card for student assignments and details panel under the admin */}
+            {/* Dedicated CURRENT Instructor & Admin Management Panel Card */}
             {user.is_admin && (
               <div
-                className="p-3 mb-4 rounded-3 border border-orange bg-dark text-start cursor-pointer shadow-sm"
-                onClick={() => setScreen('admin')}
-                style={{ cursor: 'pointer', background: 'linear-gradient(135deg, #181310 0%, #27180c 100%)' }}
+                className={`p-3 mb-4 rounded-3 border ${screen === 'admin' ? 'border-orange shadow-lg' : 'border-secondary'} text-start transition-all`}
+                style={{
+                  background: screen === 'admin'
+                    ? 'linear-gradient(135deg, #1c130d 0%, #2b170a 100%)'
+                    : 'linear-gradient(135deg, #121212 0%, #1c1917 100%)'
+                }}
               >
-                <div className="d-flex align-items-center gap-2.5 mb-1.5">
-                  <i className="bi bi-journal-check text-orange fs-4"></i>
-                  <h6 className="fw-bold text-white mb-0 font-mono">Student Assignments & Details</h6>
+                <div className="d-flex align-items-center justify-content-between mb-2">
+                  <div className="d-flex align-items-center gap-2">
+                    <i className="bi bi-shield-lock-fill text-orange fs-4"></i>
+                    <h6 className="fw-bold text-white mb-0 font-mono" style={{ fontSize: '0.88rem' }}>
+                      Instructor & Admin Panel
+                    </h6>
+                  </div>
+                  {screen === 'admin' && (
+                    <span className="badge bg-orange text-dark font-mono fw-bold" style={{ fontSize: '0.65rem' }}>
+                      ACTIVE
+                    </span>
+                  )}
                 </div>
-                <p className="text-offwhite mb-2 font-mono" style={{ fontSize: '0.78rem' }}>
-                  Assign custom tests & audit student performance records.
+
+                <p className="text-offwhite mb-3 font-mono" style={{ fontSize: '0.75rem', lineHeight: '1.4' }}>
+                  Real-time student auditing console & assessment controls.
                 </p>
-                <span className="badge bg-orange-glow text-orange font-mono small d-inline-block">
-                  Open Instructor Console →
-                </span>
+
+                {/* Live Stats Badges */}
+                <div className="d-flex flex-wrap gap-1.5 mb-3 font-mono">
+                  <span className="badge bg-dark border border-secondary text-offwhite py-1 px-2 small">
+                    👥 <strong>{adminStats.students}</strong> Students
+                  </span>
+                  <span className="badge bg-dark border border-orange text-orange-bright py-1 px-2 small">
+                    📋 <strong>{adminStats.assigned}</strong> Assigned
+                  </span>
+                  <span className="badge bg-dark border border-success text-success py-1 px-2 small">
+                    ✅ <strong>{adminStats.completed}</strong> Done
+                  </span>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="d-flex gap-2">
+                  <button
+                    onClick={() => setScreen('admin')}
+                    className={`btn btn-sm ${screen === 'admin' ? 'btn-orange-glow text-orange' : 'btn-outline-orange'} w-100 font-mono fw-bold py-1.5`}
+                    style={{ fontSize: '0.78rem' }}
+                  >
+                    Open Panel →
+                  </button>
+                  <button
+                    onClick={() => {
+                      setScreen('admin');
+                      setTimeout(() => {
+                        window.dispatchEvent(new CustomEvent('open-assign-modal'));
+                      }, 50);
+                    }}
+                    className="btn btn-sm btn-orange-glow text-orange font-mono fw-bold py-1.5 px-2.5"
+                    title="Quick Assign New Assessment"
+                    style={{ fontSize: '0.78rem', whiteSpace: 'nowrap' }}
+                  >
+                    + Assign
+                  </button>
+                </div>
               </div>
             )}
 
