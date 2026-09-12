@@ -18,7 +18,7 @@ const Sidebar = () => {
   }, []);
 
   const rankPercentile = user ? Math.min(Math.max(((user.rank || 1500) - 800) / 1600 * 100, 0), 100) : 0;
-  
+
   const getBadgeTitle = (rank) => {
     if (rank >= 2150) return { title: 'Guardian 🛡️', color: 'bg-danger text-white' };
     if (rank >= 1850) return { title: 'Knight ⚔️', color: 'bg-amber-glow' };
@@ -50,11 +50,11 @@ const Sidebar = () => {
         {user ? (
           <div className="mb-4">
             {/* Sidebar Profile Card */}
-            <div 
-              className="stat-card mb-4 text-start p-4 cursor-pointer" 
+            <div
+              className="stat-card mb-4 text-start p-4 cursor-pointer"
               style={{ cursor: 'pointer' }}
               onClick={() => setScreen('profile')}
-              title={user.is_admin ? "Click to view Admin Details" : "Click to view & edit User Details"}
+              title={user.is_admin ? "Admin Details" : "Student Details"}
             >
               <div className="d-flex align-items-center gap-4 mb-2 ps-1">
                 <div className="me-2">
@@ -90,11 +90,11 @@ const Sidebar = () => {
                       </span>
                     </div>
                     <div className="progress" style={{ height: '7px', backgroundColor: '#27272a' }}>
-                      <div 
-                        className="progress-bar" 
-                        style={{ 
-                          width: `${rankPercentile}%`, 
-                          background: 'linear-gradient(90deg, #f97316, #ff8c00, #fbbf24)' 
+                      <div
+                        className="progress-bar"
+                        style={{
+                          width: `${rankPercentile}%`,
+                          background: 'linear-gradient(90deg, #f97316, #ff8c00, #fbbf24)'
                         }}
                       />
                     </div>
@@ -110,7 +110,7 @@ const Sidebar = () => {
 
             {/* Requirement 3: Card for student assignments and details panel under the admin */}
             {user.is_admin && (
-              <div 
+              <div
                 className="p-3 mb-4 rounded-3 border border-orange bg-dark text-start cursor-pointer shadow-sm"
                 onClick={() => setScreen('admin')}
                 style={{ cursor: 'pointer', background: 'linear-gradient(135deg, #181310 0%, #27180c 100%)' }}
@@ -132,15 +132,15 @@ const Sidebar = () => {
             <nav className="nav flex-column gap-2.5 font-mono">
               {user.is_admin ? (
                 <>
-                  <button 
-                    onClick={() => setScreen('admin')} 
+                  <button
+                    onClick={() => setScreen('admin')}
                     className={`nav-link-custom border-0 text-start ${screen === 'admin' ? 'active' : ''}`}
                   >
                     <i className="bi bi-shield-lock-fill text-orange fs-5"></i>
                     Admin Panel
                   </button>
-                  <button 
-                    onClick={() => setScreen('profile')} 
+                  <button
+                    onClick={() => setScreen('profile')}
                     className={`nav-link-custom border-0 text-start ${screen === 'profile' ? 'active' : ''}`}
                   >
                     <i className="bi bi-person-badge-fill text-orange fs-5"></i>
@@ -149,22 +149,22 @@ const Sidebar = () => {
                 </>
               ) : (
                 <>
-                  <button 
-                    onClick={() => setScreen('profile')} 
+                  <button
+                    onClick={() => setScreen('profile')}
                     className={`nav-link-custom border-0 text-start ${screen === 'profile' ? 'active' : ''}`}
                   >
                     <i className="bi bi-person-badge-fill text-orange fs-5"></i>
                     My Profile Details
                   </button>
-                  <button 
-                    onClick={() => setScreen('start_test')} 
+                  <button
+                    onClick={() => setScreen('start_test')}
                     className={`nav-link-custom border-0 text-start ${screen === 'start_test' ? 'active' : ''}`}
                   >
                     <i className="bi bi-grid-1x2-fill text-orange fs-5"></i>
                     Dashboard / Tests
                   </button>
-                  <button 
-                    onClick={() => setScreen('workspace')} 
+                  <button
+                    onClick={() => setScreen('workspace')}
                     className={`nav-link-custom border-0 text-start ${screen === 'workspace' ? 'active' : ''}`}
                   >
                     <i className="bi bi-terminal-fill text-orange fs-5"></i>
@@ -183,8 +183,8 @@ const Sidebar = () => {
       </div>
 
       {user && (
-        <button 
-          onClick={logoutUser} 
+        <button
+          onClick={logoutUser}
           className="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2 rounded-3 py-2.5 font-mono mt-3"
         >
           <i className="bi bi-box-arrow-right fs-5"></i>
